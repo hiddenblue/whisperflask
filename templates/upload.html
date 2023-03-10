@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Whisper</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+      .card {
+        margin-top: 50px;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .card-header {
+        background-color: #007bff;
+        color: white;
+        font-size: 1.25rem;
+      }
+      .card-body {
+        background-color: #f7f7f7;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      label {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+      #uploadBtn {
+        margin-top: 1rem;
+      }
+      #output {
+        margin-top: 1rem;
+        font-weight: normal;
+      }
+      #error {
+        color: red;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="card-header">
+          Upload Audio
+        </div>
+        <div class="card-body">
+          <form>
+            <div class="form-group">
+              <label for="audio">Choose audio file to upload:</label>
+              <input type="file" id="audio" accept="audio/*" required>
+            </div>
+            <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
+          </form>
+          <div id="output"></div>
+          <div id="error"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        $('#uploadBtn').click(() => {
+          const fileInput = $('#audio')[0];
+          const file = fileInput.files[0];
+          if (!file) {
+            $('#error').text('Please select a file to upload.');
+            $('#output').empty();
+            return;
+          }
+          const formData = new FormData();
+          formData.append('file', file);
+          $.ajax({
+            type: 'POST',
+            url: '/upload',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (response) => {
+              $('#output').text(response.transcription);
+              $('#error').empty();
+            },
+            error: (xhr, status, error) => {
+              $('#output').empty();
+              $('#error').text('Error uploading file.');
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
