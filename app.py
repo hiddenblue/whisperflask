@@ -30,7 +30,7 @@ def run_whisper(cmd):
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     default_language = 'Chinese'  # 默认语言为中文
-    default_option = 'transcribe'  # 默认选项为 transcribe
+    default_operation = 'transcribe'  # 默认选项为 transcribe
     default_model = 'medium'  # 默认模型为 medium
     if request.method == 'POST':
         # check if the post request has the file part
@@ -56,16 +56,20 @@ def upload_file():
             file_path = audio_path
 
         # Use whisper to transcribe/translate the file based on the selected option and model
-        option = request.form.get('option', default_option)  # 获取用户选择的选项，默认为 transcribe
+        option = request.form.get('operation', default_operation)  # 获取用户选择的选项，默认为 transcribe
         model = request.form.get('model', default_model)  # 获取用户选择的模型，默认为 medium
+
         if option == 'transcribe':
+            language = request.form.get('language', default_language)  # 获取用户选择的语言，默认为 Chinese
             cmd = ['/home/chase/Documents/miniconda3/envs/whisper/bin/python',
                    '/home/chase/Documents/miniconda3/envs/whisper/bin/whisper', file_path, '--model',
-                   model, '--language', default_language, '-f', 'txt']
+                   model, '--language', language, '-f', 'txt']
         elif option == 'translate':
+            src_lang = request.form.get('src_lang', default_language)  # 获取用户选择的源语言，默认为 en-US
+            trg_lang = request.form.get('trg_lang', 'en')  # 获取用户选择的目标语言，默认为 en
             cmd = ['/home/chase/Documents/miniconda3/envs/whisper/bin/python',
                    '/home/chase/Documents/miniconda3/envs/whisper/bin/whisper', file_path, '--model',
-                   model, '--src-lang', default_language, '--trg-lang', 'en', '-f', 'txt']
+                   model, '--task', 'translate', '--language', trg_lang, '-f', 'txt']
         else:
             return jsonify({'error': 'Invalid option selected.'}), 400
         # Run whisper
