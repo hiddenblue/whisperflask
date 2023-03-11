@@ -62,55 +62,72 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="card">
-        <div class="card-header">
-          Whisper 录音转文本
-        </div>
-        <div class="card-body">
-          <form>
-            <div class="form-group">
-              <label for="audio">Choose audio file to upload:</label>
-              <input type="file" id="audio" accept="audio/*" required>
-            </div>
-            <div class="form-group">
-              <label for="language">Language:</label>
-              <select id="language" class="form-control">
-                <option value="zh-CN">Chinese (Simplified)</option>
-                <option value="en-US">English (US)</option>
-                <option value="ja-JP">Japanese</option>
-                <option value="ko-KR">Korean</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="operation">Operation:</label>
-              <select id="operation" class="form-control">
-                <option value="transcription">Transcribe</option>
-                <option value="translation">Translate</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="model">Model:</label>
-              <select id="model" class="form-control">
-                <option value="medium">Medium</option>
-                <option value="small">small</option>
-              </select>
-            </div>
-            <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
-          </form>
-          <div>
-            <label for="output">Output:</label>
-            <div class="input-group mb-3">
-              <textarea class="form-control" id="output" rows="10" readonly></textarea>
-              <div class="input-group-append">
-                <button class="btn btn-primary" type="button" id="copyBtn">Copy</button>
-              </div>
-            </div>
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      Whisper 录音转文本
+    </div>
+    <div class="card-body">
+      <form>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="audio">Choose audio/video file to upload:</label>
+            <input type="file" id="audio" accept=".mp3,.wav,.ogg,.mp4,.mov,.avi,.mkv" required class="form-control">
           </div>
-          <div id="error"></div>
+          <div class="form-group col-md-6">
+            <label for="mediaType">Media type:</label>
+            <select id="mediaType" class="form-control">
+              <option value="audio">Audio</option>
+              <option value="video">Video</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="language">Language:</label>
+            <select id="language" class="form-control">
+              <option value="zh-CN">Chinese (Simplified)</option>
+              <option value="en-US">English (US)</option>
+              <option value="ja-JP">Japanese</option>
+              <option value="ko-KR">Korean</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="operation">Operation:</label>
+            <select id="operation" class="form-control">
+              <option value="transcription">Transcribe</option>
+              <option value="translation">Translate</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="model">Model:</label>
+            <select id="model" class="form-control">
+              <option value="medium">Medium</option>
+              <option value="small">small</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6">
+            <label></label>
+            <button type="button" class="btn btn-primary form-control" id="uploadBtn">Upload</button>
+          </div>
+        </div>
+      </form>
+      <div>
+        <label for="output">Output:</label>
+        <div class="input-group mb-3">
+          <textarea class="form-control" id="output" rows="10" readonly></textarea>
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" id="copyBtn">Copy</button>
+          </div>
         </div>
       </div>
+      <div id="error"></div>
     </div>
+  </div>
+</div>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -119,6 +136,7 @@
     $("#uploadBtn").click(function () {
     // Get file input and selected options
     var fileInput = document.getElementById("audio");
+    var mediaType = document.getElementById("mediaType").value;
     var language = document.getElementById("language").value;
     var operation = document.getElementById("operation").value;
     var model = document.getElementById("model").value;
@@ -132,6 +150,7 @@
     // Add file to FormData object
     formData.append("file", fileInput.files[0]);
     // Add selected options to FormData object
+    formData.append("mediaType", mediaType);
     formData.append("language", language);
     formData.append("operation", operation);
     formData.append("model", model);
