@@ -18,9 +18,9 @@ def index_html():
 def run_whisper(cmd):
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     for line in iter(proc.stdout.readline, b''):
-        yield f'data: {zhconv.convert(line.decode("utf-8"), "zh-cn")}<br>\n'
+        yield f'{zhconv.convert(line.decode("utf-8"), "zh-cn")}\n'
     for line in iter(proc.stderr.readline, b''):
-        yield f'data: {line.decode("utf-8")}<br>\n'
+        yield f'{line.decode("utf-8")}\n'
     proc.stdout.close()
     proc.stderr.close()
     proc.wait()
@@ -29,6 +29,7 @@ def run_whisper(cmd):
 def upload_file():
     default_language = 'Chinese'  # 默认语言为中文
     default_option = 'transcribe'  # 默认选项为 transcribe
+    default_model = 'medium'  # 默认模型为 medium
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -40,16 +41,17 @@ def upload_file():
         # Save the file to disk
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(file_path)
-        # Use whisper to transcribe/translate the file based on the selected option
+        # Use whisper to transcribe/translate the file based on the selected option and model
         option = request.form.get('option', default_option)  # 获取用户选择的选项，默认为 transcribe
+        model = request.form.get('model', default_model)  # 获取用户选择的模型，默认为 medium
         if option == 'transcribe':
             cmd = ['/home/chase/Documents/miniconda3/envs/whisper/bin/python',
                    '/home/chase/Documents/miniconda3/envs/whisper/bin/whisper', file_path, '--model',
-                   'medium', '--language', default_language, '-f', 'txt']
+                   model, '--language', default_language, '-f', 'txt']
         elif option == 'translate':
             cmd = ['/home/chase/Documents/miniconda3/envs/whisper/bin/python',
                    '/home/chase/Documents/miniconda3/envs/whisper/bin/whisper', file_path, '--model',
-                   'medium', '--src-lang', default_language, '--trg-lang', 'en', '-f', 'txt']
+                   model, '--src-lang', default_language, '--trg-lang', 'en', '-f', 'txt']
         else:
             return jsonify({'error': 'Invalid option selected.'}), 400
         # Run whisper command and return output using SSE

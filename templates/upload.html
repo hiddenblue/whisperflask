@@ -7,8 +7,8 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <style>
       .card {
-        margin-top: 50px;
-        max-width: 700px;
+        margin-top: 30px;
+        max-width: 650px;
         margin-left: auto;
         margin-right: auto;
       }
@@ -28,16 +28,36 @@
         margin-bottom: 0.5rem;
       }
       #uploadBtn {
-        margin-top: 1rem;
+        margin-top: 0.5rem;
       }
       #output {
-        margin-top: 1rem;
+        margin-top: 0.8rem;
+        margin-bottom: 1rem;
         font-weight: normal;
         white-space: pre-wrap;
+        height: 700px;
+        padding-top: 20px;
       }
       #error {
         color: red;
         margin-top: 1rem;
+      }
+      #copyBtn {
+        margin-top: 1rem;
+        padding: 0.1rem;
+        font-size: 0.8rem;
+        color: darkgray;
+        background-color: #0069d9;
+        border: none;
+        border-radius: 0.15rem;
+        height: 20px;
+        length: 30px;
+
+      }
+
+      #copyBtn:hover {
+        background-color: #0069d9;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -45,7 +65,7 @@
     <div class="container">
       <div class="card">
         <div class="card-header">
-          Upload Audio
+          Whisper 录音转文本
         </div>
         <div class="card-body">
           <form>
@@ -69,11 +89,23 @@
                 <option value="translation">Translate</option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="model">Model:</label>
+              <select id="model" class="form-control">
+                <option value="medium">Medium</option>
+                <option value="small">small</option>
+              </select>
+            </div>
             <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
           </form>
           <div>
             <label for="output">Output:</label>
-            <textarea class="form-control" id="output" rows="10" readonly></textarea>
+            <div class="input-group mb-3">
+              <textarea class="form-control" id="output" rows="10" readonly></textarea>
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="button" id="copyBtn">Copy</button>
+              </div>
+            </div>
           </div>
           <div id="error"></div>
         </div>
@@ -89,6 +121,7 @@
     var fileInput = document.getElementById("audio");
     var language = document.getElementById("language").value;
     var operation = document.getElementById("operation").value;
+    var model = document.getElementById("model").value;
     // Check if file input is empty
     if (fileInput.files.length === 0) {
     $("#error").text("Please select a file to upload.");
@@ -101,6 +134,7 @@
     // Add selected options to FormData object
     formData.append("language", language);
     formData.append("operation", operation);
+    formData.append("model", model);
     // Clear previous output and error messages
     $("#output").val("");
     $("#error").text("");
@@ -111,17 +145,34 @@
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhr.onreadystatechange = function () {
     if (xhr.readyState === 3) {
-    // Display output in textarea as it comes in
-    $("#output").val(xhr.responseText);
+      // Display output in textarea as it comes in
+      $("#output").val(xhr.responseText);
+      // Calculate the percentage of response received
+      var percent = Math.floor(xhr.responseText.length / xhr.getResponseHeader('Content-Length') * 100);
+      // Update the output label with the percentage
+      $("#outputLabel").text("Output (" + percent + "% received):");
     } else if (xhr.readyState === 4) {
-    // Display final output and error messages
-    $("#output").val(xhr.responseText);
-    if (xhr.status !== 200) {
-    $("#error").text("An error occurred. Please try again.");
-    }
+      // Display final output and error messages
+      $("#output").val(xhr.responseText);
+      $("#outputLabel").text("Output:");
+      if (xhr.status !== 200) {
+        $("#error").text("An error occurred. Please try again.");
+      }
     }
     };
     xhr.send(formData);
+    $(document).ready(function () {
+  // ...之前的代码不变
+    $("#copyBtn").click(function() {
+      var output = document.getElementById("output");
+      output.select();
+      document.execCommand("copy");
+      $("#copyBtn").text("Copied!");
+      setTimeout(function() {
+        $("#copyBtn").text("Copy");
+      }, 2000);
+    });
+  });
     });
     });
   </script>
