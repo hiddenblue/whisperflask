@@ -1,6 +1,6 @@
 import os
 import zhconv
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 from flask_cors import CORS
 from subprocess import Popen, PIPE
 
@@ -14,6 +14,16 @@ if not os.path.exists(UPLOAD_FOLDER):
 @app.route('/')
 def index_html():
     return render_template('upload.html')
+
+def run_whisper(cmd):
+    proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    for line in iter(proc.stdout.readline, b''):
+        yield f'data: {zhconv.convert(line.decode("utf-8"), "zh-cn")}<br>\n'
+    for line in iter(proc.stderr.readline, b''):
+        yield f'data: {line.decode("utf-8")}<br>\n'
+    proc.stdout.close()
+    proc.stderr.close()
+    proc.wait()
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -42,21 +52,10 @@ def upload_file():
                    'medium', '--src-lang', default_language, '--trg-lang', 'en', '-f', 'txt']
         else:
             return jsonify({'error': 'Invalid option selected.'}), 400
-        proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = proc.communicate()
-        stdout_zh_cn = zhconv.convert(stdout.decode("utf-8"), 'zh-cn')
-        if stderr:
-            return jsonify({'error': stderr.decode('utf-8')}), 400
-        else:
-            if option == 'transcribe':
-                result = stdout_zh_cn.replace('\n', '<br>')  # 替换为HTML换行标签
-            else:
-                result = stdout_zh_cn
-            # Remove the uploaded file from disk
-            os.remove(file_path)
-            return jsonify({'result': result})
+        # Run whisper command and return output using SSE
+        return Response(run_whisper(cmd), mimetype='text/event-stream')
     else:
         return render_template('upload.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

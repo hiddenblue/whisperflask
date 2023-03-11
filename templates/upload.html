@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Whisper</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <style>
       .card {
         margin-top: 50px;
@@ -32,6 +33,7 @@
       #output {
         margin-top: 1rem;
         font-weight: normal;
+        white-space: pre-wrap;
       }
       #error {
         color: red;
@@ -69,44 +71,59 @@
             </div>
             <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
           </form>
-          <div id="output"></div>
+          <div>
+            <label for="output">Output:</label>
+            <textarea class="form-control" id="output" rows="10" readonly></textarea>
+          </div>
           <div id="error"></div>
         </div>
       </div>
     </div>
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-<script>
-  $(document).ready(() => {
-    $('#uploadBtn').click(() => {
-      const fileInput = $('#audio')[0];
-      const file = fileInput.files[0];
-      if (!file) {
-        $('#error').text('Please select a file to upload.');
-        $('#output').empty();
-        return;
-      }
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('language', $('#language').val());
-      formData.append('operation', $('#operation').val());
-      $.ajax({
-        type: 'POST',
-        url: '/upload',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: (response) => {
-          $('#output').html(response.transcription);
-          $('#error').empty();
-        },
-        error: (xhr, status, error) => {
-          $('#output').empty();
-          $('#error').text('Error uploading file.');
-        }
-      });
+    <script>
+    $(document).ready(function () {
+    $("#uploadBtn").click(function () {
+    // Get file input and selected options
+    var fileInput = document.getElementById("audio");
+    var language = document.getElementById("language").value;
+    var operation = document.getElementById("operation").value;
+    // Check if file input is empty
+    if (fileInput.files.length === 0) {
+    $("#error").text("Please select a file to upload.");
+    return;
+    }
+    // Create new FormData object
+    var formData = new FormData();
+    // Add file to FormData object
+    formData.append("file", fileInput.files[0]);
+    // Add selected options to FormData object
+    formData.append("language", language);
+    formData.append("operation", operation);
+    // Clear previous output and error messages
+    $("#output").val("");
+    $("#error").text("");
+    // Send POST request using jQuery AJAX
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/upload");
+    xhr.setRequestHeader("enctype", "multipart/form-data");
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xhr.onreadystatechange = function () {
+    if (xhr.readyState === 3) {
+    // Display output in textarea as it comes in
+    $("#output").val(xhr.responseText);
+    } else if (xhr.readyState === 4) {
+    // Display final output and error messages
+    $("#output").val(xhr.responseText);
+    if (xhr.status !== 200) {
+    $("#error").text("An error occurred. Please try again.");
+    }
+    }
+    };
+    xhr.send(formData);
     });
-  });
-</script>
+    });
+  </script>
+  </body>
+</html>
