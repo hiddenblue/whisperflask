@@ -61,8 +61,8 @@ def upload_file():
 
         if option == 'transcribe':
             language = request.form.get('language', default_language)  # 获取用户选择的语言，默认为 Chinese
-            cmd = ['/home/chase/Documents/miniconda3/envs/whisper/bin/python',
-                   '/home/chase/Documents/miniconda3/envs/whisper/bin/whisper', file_path, '--model',
+            cmd = ['/home/$USER/Documents/miniconda3/envs/whisper/bin/python',
+                   '/home/$USER/Documents/miniconda3/envs/whisper/bin/whisper', file_path, '--model',
                    model, '--language', language, '-f', 'txt']
         elif option == 'translate':
             src_lang = request.form.get('src_lang', default_language)  # 获取用户选择的源语言，默认为 en-US
